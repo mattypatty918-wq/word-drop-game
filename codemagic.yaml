@@ -1,32 +1,23 @@
-name: Word Fall
-description: Addicting word puzzle game - drop and connect letters
-type: ios
-environment:
-  ios: "17.0"
-  node: "18"
+# Codemagic CI/CD for word-drop-game
 workflows:
   ios-workflow:
     name: iOS
     max_build_duration: 60
-    instance_type: mac_mini_m2
-    integrations:
-      app_store_connect: Codemagic
     environment:
       vars:
-        BUNDLE_ID: com.mattypattysapps.wordfall
-        XCODE_WORKSPACE: App/App.xcworkspace
-        XCODE_SCHEME: App
+        XCODE_VERSION: "15.0"
+        APP_NAME: "word-drop-game"
+    triggering:
+      branch_patterns:
+        - pattern: master
+          include: true
     scripts:
-      - npm install
-      - npx cap sync ios
-      - cd ios/App && pod install
-      - keychain initialize
-      - app-store-connect fetch-signing-files $BUNDLE_ID --type IOS_APP_STORE --create
-      - keychain add-certificates
-      - xcode-project use-profiles
-      - xcode-project build-ipa --workspace $XCODE_WORKSPACE --scheme $XCODE_SCHEME
+      - git clone https://github.com/mattypatty918-wq/word-drop-game.git --depth 1
+      - cd word-drop-game && git submodule update --init --recursive
+      - cd word-drop-game && xcode-project fetch-dependencies --use-cache
+      - cd word-drop-game && xcode-project build --workspace ios/App.xcworkspace --scheme App --configuration Release
     artifacts:
-      - build/ios/ipa/*.ipa
+      - word-drop-game/ios/App/App.xcarchive
     publishing:
       app_store_connect:
-        auth: integration
+        api_key: Whitefoxes
